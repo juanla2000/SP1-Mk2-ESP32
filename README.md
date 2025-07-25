@@ -7,7 +7,7 @@ Controlador MIDI modular diseñado para sintetizadores tipo Serum, con una inter
 
 ---
 
-## 📁 Estructura del proyecto
+# Estructura del proyecto
 
 - `FIRMWARE_MIDI_SP1.ino`: archivo principal con lógica de `setup()` y `loop()`.
 - `hardware_config.h`: define pines y configuraciones de hardware.
@@ -23,26 +23,26 @@ Controlador MIDI modular diseñado para sintetizadores tipo Serum, con una inter
 
 ---
 
-## ✅ Funciones implementadas
+# Funciones implementadas
 
-### 🔧 Configuración general
+# Configuración general
 - `cargarConfig()`: activa MIDI Thru, rutas del secuenciador, etc.
 - Pines definidos en `hardware_config.h`.
 - Variables globales eliminadas de múltiples archivos para evitar duplicaciones.
 
-### 🕹️ Controles
+# Controles
 - 108 controles físicos definidos en `controles.cpp`.
 - Se cargan desde un archivo `.csv` al arrancar (`SERUM_SP1_SURFACE_PRESET01.csv`).
 - CC MIDI actualiza cada control por coincidencia.
 - Envío de notas MIDI incluido.
 
-### 🧠 Secuenciador
+# Secuenciador
 - Matriz `Step secuencia[numSecuencias][totalSteps]`.
 - Variables: nota, velocidad, duración, activación.
 - Avance por tiempo `stepInterval`.
 - Editar valores por CCs: 20–23.
 
-### 📁 Gestión de presets
+# Gestión de presets
 - Menú dividido en zonas:
   - **Superior:** LOAD / SAVE / DELETE
   - **Central:** selección nombre de preset
@@ -51,36 +51,36 @@ Controlador MIDI modular diseñado para sintetizadores tipo Serum, con una inter
 - Carga desde SD lista.
 - Guardado y borrado pendiente.
 
-### 🖥️ Pantallas OLED
+# Pantallas OLED
 - `pantalla_unica.cpp`: vista gráfica dinámica según `pantallaActiva`.
 - `pantalla_inicio.cpp`: animación al arrancar.
 - Parpadeo gestionado con `tiempoUltimoParpadeo`.
 
 ---
 
-## 🛠️ Pendiente por implementar
+# Pendiente por implementar
 
-### Menú de Presets
-- [ ] Finalizar SAVE de preset desde valores actuales de `controles[]`.
-- [ ] DELETE: borrar archivo seleccionado de SD.
+# Menú de Presets
+- Finalizar SAVE de preset desde valores actuales de `controles[]`.
+- DELETE: borrar archivo seleccionado de SD.
 
-### Menú CONFIG (modular)
-- [ ] Navegación y edición de parámetros como:
+# Menú CONFIG (modular)
+  - Navegación y edición de parámetros como:
   - Enlace teclado→secuenciador (`secuenciaTecladoLinkeada`)
   - Mutear notas del secuenciador
-- [ ] Guardado persistente si se desea (EEPROM / SD).
+  - Guardado persistente si se desea (EEPROM / SD).
 
-### Secuenciador
+# Secuenciador
 - [ ] Posible sincronización por MIDI Clock (futuro).
 - [ ] Añadir edición directa en pantalla (OLED) por pasos.
 
-### Visual
+# Visual
 - [ ] Diferenciar visualmente zonas del menú.
 - [ ] Mostrar nombres de presets cargados.
 
 ---
 
-## 📦 Librerías necesarias
+# Librerías necesarias
 
 - `Adafruit_SSD1351`
 - `Adafruit_GFX`
@@ -94,7 +94,7 @@ Controlador MIDI modular diseñado para sintetizadores tipo Serum, con una inter
 
 ---
 
-## ✅ Últimos cambios clave (Julio 2025)
+# Últimos cambios clave (Julio 2025)
 - Separación de `hardware_config.h`, `configuracion.h`, `controles.h`
 - Eliminación de variables duplicadas (`lastStepTime`, `tecladoSecuenciaEnabled`).
 - Revisión completa de interdependencias entre archivos.
@@ -102,7 +102,7 @@ Controlador MIDI modular diseñado para sintetizadores tipo Serum, con una inter
 
 ---
 
-## 🧩 Arquitectura modular
+# Arquitectura modular
 
 ```text
 main.ino

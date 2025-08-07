@@ -1,0 +1,29 @@
+﻿# Bloque 1: configuración global
+tipo,tempo,porcentaje_legato,porcentaje_sustain,modo_mono,global_on
+config,174,15,130,true,true
+""
+# Bloque 2: configuración de pistas
+tipo,pista,activa,nota_base,velocidad,duration,zona,total_steps,max_steps,canal
+track,0,true,60,100,6,false,16,32,1
+track,1,true,62,90,4,false,16,32,2
+track,2,false,65,80,8,false,16,32,3
+track,3,true,48,110,4,true,16,32,4
+""
+# Bloque 3: pasos del secuenciador
+tipo,pista,index,active,note,velocity,inicio,longitud
+step,0,0,true,60,100,0,6
+step,0,1,true,62,100,1,4
+step,0,2,false,0,0,0,0
+step,0,3,true,64,110,2,4
+step,0,0,true,60,100,0,6
+step,0,1,true,62,100,1,4
+step,0,2,false,0,0,0,0
+step,0,3,true,64,110,2,4
+step,1,0,true,36,90,0,6
+step,1,1,true,38,100,2,4
+step,1,0,true,36,90,0,6
+step,1,1,true,38,100,2,4
+step,3,0,true,72,120,0,8
+step,3,1,true,74,120,3,5
+step,3,0,true,72,120,0,8
+step,3,1,true,74,120,3,5

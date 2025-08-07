@@ -1,58 +1,58 @@
 //secuenciador.h
 
-#pragma once
+#ifndef SECUENCIADOR_H
+#define SECUENCIADOR_H
 
 #include <Arduino.h>
 
-// ==============================
-// PARÁMETROS DEL SECUENCIADOR
-// ==============================
-
-const uint8_t totalSteps = 16;       // Pasos por secuencia
-const uint8_t numSecuencias = 4;     // Número de pistas/sec. independientes
-
-// ==============================
-// ESTRUCTURA DE CADA PASO
-// ==============================
+#define NUM_SEQUENCERS 4
+#define MAX_STEPS_CONFIGURABLE 64
 
 struct Step {
-  bool active = false;       // ¿Está activo este paso?
-  uint8_t note = 60;         // Nota MIDI por defecto C4
-  uint8_t velocity = 100;    // Velocidad MIDI 0-127
-  uint16_t duration = 200;   // Duración en milisegundos
+  bool active = false;
+  uint8_t note = 60;
+  uint8_t velocity = 100;
+  uint16_t duration = 1; // duración en ticks dentro del step
+  uint8_t inicio = 0;     // tick de inicio dentro del step
 };
 
-// ==============================
-// VARIABLES DEL ESTADO GLOBAL
-// ==============================
+// Variables principales
+extern Step secuencia[NUM_SEQUENCERS][MAX_STEPS_CONFIGURABLE];
+extern uint8_t indicePistaActiva;
+extern uint8_t totalSteps[NUM_SEQUENCERS];
+extern uint8_t maxSteps[NUM_SEQUENCERS];
+extern uint8_t canalSecuenciador;
+extern uint8_t indicePasoActual[NUM_SEQUENCERS];
+extern uint8_t porcentajeLegato;
+extern uint8_t porcentajeSustain;
+extern bool modoMono;
 
-// Matriz de pasos: [secuencia][step]
-extern Step secuencia[numSecuencias][totalSteps];
+extern bool secuenciadorActivo[NUM_SEQUENCERS];
+extern uint8_t secuenciadorNotas[NUM_SEQUENCERS];
+extern uint8_t secuenciadorVelocidad[NUM_SEQUENCERS];
+extern uint8_t secuenciadorLongitud[NUM_SEQUENCERS];
+extern bool secuenciadorZona[NUM_SEQUENCERS];
 
-// Índices de ejecución
-extern uint8_t currentStep;
-extern uint8_t currentSecuencia;   // futura ampliación para varias pistas
-extern uint32_t lastStepTime;
-extern unsigned long stepInterval;
-
-// Variables de control por secuencia
-extern bool secuenciadorActivo[numSecuencias];       // Secuencia activa
-extern uint8_t secuenciadorNotas[numSecuencias];     // Nota por secuencia
-extern uint8_t secuenciadorVelocidad[numSecuencias]; // Vel. por secuencia
-extern uint8_t secuenciadorLongitud[numSecuencias];  // Duración por secuencia
-extern bool secuenciadorZona[numSecuencias];         // Zona dedicada ON/OFF
-
-// Estados globales
-extern bool secuenciadorGlobalActivo;
-extern bool secuenciadorRutaSolo;
-extern bool secuenciadorRutaActiva;
-extern bool tecladoSecuenciaEnabled;
-
-// ==============================
-// FUNCIONES PRINCIPALES
-// ==============================
-
+// Inicialización y lógica de pasos
 void inicializarSecuenciador();
+void avanzarPaso();
 void avanzarSecuencia();
-void editarPaso(uint8_t cc, uint8_t valor);
+void apagarNotaSecuenciador();
+
+// Edición y lectura
+void editarPaso(uint8_t index, const Step& nuevoPaso);
+const Step& obtenerPaso(uint8_t index);
+void establecerTotalSteps(uint8_t total);
+void establecerMaxSteps(uint8_t max);
+uint8_t obtenerTotalSteps();     // ✅ Añadido
+uint8_t obtenerMaxSteps();       // ✅ Añadido
 String notaToNombre(uint8_t nota);
+
+// Presets
+bool guardarPresetSecuenciador(const char* ruta);
+bool cargarPresetSecuenciador(const char* ruta);
+
+// ✅ NUEVA FUNCIÓN USB MIDI CLOCK
+void actualizarClockUSB();
+
+#endif

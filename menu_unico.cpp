@@ -2,208 +2,265 @@
 
 #include "menu_unico.h"
 #include "pantalla_unica.h"
-#include "controles.h"
 #include "secuenciador.h"
 #include "configuracion.h"
-#include <SD.h>
+#include "controles.h"
+#include "zona_menu.h"
 
 EstadoMenuUnico estadoMenuUnico;
 
-// ===========================================
-// AUXILIARES PARA LIMITAR SUBMENUS VÁLIDOS
-// ===========================================
-
-bool submenuValidoParaMenu(uint8_t menu, uint8_t submenu) {
-  switch (menu) {
-    case MENU_MIDI_KEYBOARD:
-      return submenu == SUBMENU_NOTE;
-    case MENU_MIDI_SURFACE:
-      return submenu == SUBMENU_CC;
-    case MENU_SEQUENCER:
-      return submenu >= SUBMENU_TRIGGER && submenu <= SUBMENU_LONG;
-    case MENU_PRESETS_SURFACE:
-    case MENU_PRESETS_SEQUENCER:
-      return submenu == SUBMENU_PRESETS;
-    case MENU_CONFIG_KEYBOARD:
-      return submenu == SUBMENU_ROUTE;
-    case MENU_CONFIG_SEQUENCER:
-      return submenu == SUBMENU_ACTIVE;
-    case MENU_CONFIG_SURFACE:
-      return submenu == SUBMENU_SEQUENCER;
-    default:
-      return false;
-  }
-}
-
 void corregirSubmenuInvalido() {
-  if (!submenuValidoParaMenu(estadoMenuUnico.indiceSuperior1, estadoMenuUnico.indiceSuperior2)) {
-    // Resetear al primer válido si no es correcto
+  if (!submenuValidoParaMenu(estadoMenuUnico.indiceSuperior1, estadoMenuUnico.submenuSuperior)) {
     switch (estadoMenuUnico.indiceSuperior1) {
-      case MENU_MIDI_KEYBOARD:     estadoMenuUnico.indiceSuperior2 = SUBMENU_NOTE; break;
-      case MENU_MIDI_SURFACE:      estadoMenuUnico.indiceSuperior2 = SUBMENU_CC; break;
-      case MENU_SEQUENCER:         estadoMenuUnico.indiceSuperior2 = SUBMENU_TRIGGER; break;
       case MENU_PRESETS_SURFACE:
-      case MENU_PRESETS_SEQUENCER: estadoMenuUnico.indiceSuperior2 = SUBMENU_PRESETS; break;
-      case MENU_CONFIG_KEYBOARD:   estadoMenuUnico.indiceSuperior2 = SUBMENU_ROUTE; break;
-      case MENU_CONFIG_SEQUENCER:  estadoMenuUnico.indiceSuperior2 = SUBMENU_ACTIVE; break;
-      case MENU_CONFIG_SURFACE:    estadoMenuUnico.indiceSuperior2 = SUBMENU_SEQUENCER; break;
+      case MENU_PRESETS_SEQUENCER:
+        estadoMenuUnico.submenuSuperior = SUBMENU_PRESETS;
+        break;
+      case MENU_CONFIG_KEYBOARD:
+      case MENU_CONFIG_SEQUENCER:
+      case MENU_CONFIG_SURFACE:
+        estadoMenuUnico.submenuSuperior = SUBMENU_CONFIG_SURFACE_SEQUENCER;
+        break;
+      case MENU_SEQUENCER:
+        estadoMenuUnico.submenuSuperior = SUBMENU_TRIGGER;
+        break;
+      default:
+        estadoMenuUnico.submenuSuperior = SUBMENU_NONE;
+        break;
     }
   }
 }
 
 void actualizarTextosMenuUnico() {
-  corregirSubmenuInvalido();
-
-  // Superior 1
-  switch (estadoMenuUnico.indiceSuperior1) {
-    case MENU_MIDI_KEYBOARD:       estadoMenuUnico.nombreSuperior1 = "MIDI - KEYBOARD"; break;
-    case MENU_MIDI_SURFACE:        estadoMenuUnico.nombreSuperior1 = "MIDI - SURFACE"; break;
-    case MENU_SEQUENCER:           estadoMenuUnico.nombreSuperior1 = "SEQUENCER"; break;
-    case MENU_PRESETS_SURFACE:     estadoMenuUnico.nombreSuperior1 = "PRESETS - SURFACE"; break;
-    case MENU_PRESETS_SEQUENCER:   estadoMenuUnico.nombreSuperior1 = "PRESETS - SEQUENCER"; break;
-    case MENU_CONFIG_KEYBOARD:     estadoMenuUnico.nombreSuperior1 = "CONFIG - KEYBOARD"; break;
-    case MENU_CONFIG_SEQUENCER:    estadoMenuUnico.nombreSuperior1 = "CONFIG - SEQUENCER"; break;
-    case MENU_CONFIG_SURFACE:      estadoMenuUnico.nombreSuperior1 = "CONFIG - SURFACE"; break;
-    default:                       estadoMenuUnico.nombreSuperior1 = "--"; break;
-  }
-
-  // Superior 2
-  switch (estadoMenuUnico.indiceSuperior2) {
-    case SUBMENU_NOTE:         estadoMenuUnico.nombreSuperior2 = "NOTE"; break;
-    case SUBMENU_CC:           estadoMenuUnico.nombreSuperior2 = "CC"; break;
-    case SUBMENU_TRIGGER:      estadoMenuUnico.nombreSuperior2 = "TRIGGER"; break;
-    case SUBMENU_PRESETS:      estadoMenuUnico.nombreSuperior2 = "PRESETS"; break;
-    case SUBMENU_ROUTE:        estadoMenuUnico.nombreSuperior2 = "ROUTE"; break;
-    case SUBMENU_ACTIVE:       estadoMenuUnico.nombreSuperior2 = "ACTIVE"; break;
-    case SUBMENU_SEQUENCER:    estadoMenuUnico.nombreSuperior2 = "SEQUENCER"; break;
-    case SUBMENU_ZONE:         estadoMenuUnico.nombreSuperior2 = "ZONE"; break;
-    default:                   estadoMenuUnico.nombreSuperior2 = "--"; break;
-  }
-
-  // Central 1
-  switch (estadoMenuUnico.indiceSuperior1) {
-    case MENU_SEQUENCER:
-      estadoMenuUnico.nombreCentral1 = "STEP GROUP";
+  estadoMenuUnico.nombreSuperior1 = obtenerNombreGrupo(estadoMenuUnico.indiceSuperior1);
+  switch (estadoMenuUnico.submenuSuperior) {
+    case SUBMENU_PRESETS:
+      estadoMenuUnico.nombreSuperior2 = "PRESETS";
       break;
-    case MENU_PRESETS_SURFACE:
-    case MENU_PRESETS_SEQUENCER:
-      estadoMenuUnico.nombreCentral1 = "LOAD/SAVE/DEL";
+    case SUBMENU_CONFIG_SURFACE_SEQUENCER:
+    case SUBMENU_CONFIG_SURFACE_MIDI:
+    case SUBMENU_CONFIG_KEYBOARD_OUTPUT:
+    case SUBMENU_CONFIG_KEYBOARD_LINK:
+    case SUBMENU_CONFIG_SEQUENCER_OUTPUT:
+      estadoMenuUnico.nombreSuperior2 = "CONFIG";
       break;
-    case MENU_CONFIG_KEYBOARD:
-    case MENU_CONFIG_SEQUENCER:
-      estadoMenuUnico.nombreCentral1 = "NOTE";
+    case SUBMENU_TRIGGER:
+      estadoMenuUnico.nombreSuperior2 = "STEP TRIGGER";
       break;
-    case MENU_CONFIG_SURFACE:
-      estadoMenuUnico.nombreCentral1 = "ZONE";
+    case SUBMENU_NOTE:
+      estadoMenuUnico.nombreSuperior2 = "STEP NOTE";
       break;
-    case MENU_MIDI_SURFACE:
-      estadoMenuUnico.nombreCentral1 = "CC INFO";
+    case SUBMENU_VELOCITY:
+      estadoMenuUnico.nombreSuperior2 = "STEP VELOCITY";
+      break;
+    case SUBMENU_LONG:
+      estadoMenuUnico.nombreSuperior2 = "STEP LONG";
+      break;
+    case SUBMENU_TOTAL_STEPS:
+      estadoMenuUnico.nombreSuperior2 = "TOTAL STEPS";
+      break;
+    case SUBMENU_MAX_STEPS:
+      estadoMenuUnico.nombreSuperior2 = "MAX STEPS";
+      break;
+    case SUBMENU_MODE:
+      estadoMenuUnico.nombreSuperior2 = "MODE";
+      break;
+    case SUBMENU_CURVE:
+      estadoMenuUnico.nombreSuperior2 = "CURVE";
+      break;
+    case SUBMENU_LEGATO:
+      estadoMenuUnico.nombreSuperior2 = "LEGATO";
+      break;
+    case SUBMENU_BPM:
+      estadoMenuUnico.nombreSuperior2 = "BPM";
+      break;
+    case SUBMENU_BPM_SYNC:
+      estadoMenuUnico.nombreSuperior2 = "BPM SYNC";
       break;
     default:
-      estadoMenuUnico.nombreCentral1 = "-";
-      break;
+      estadoMenuUnico.nombreSuperior2 = "";
   }
 
-  // Central 2
-  switch (estadoMenuUnico.indiceSuperior1) {
-    case MENU_SEQUENCER:
-      estadoMenuUnico.nombreCentral2 = "STEP";
-      break;
-    case MENU_PRESETS_SURFACE:
-    case MENU_PRESETS_SEQUENCER:
-      estadoMenuUnico.nombreCentral2 = "NAME";
-      break;
-    case MENU_CONFIG_KEYBOARD:
-      estadoMenuUnico.nombreCentral2 = "SEQUENCER";
-      break;
-    case MENU_CONFIG_SEQUENCER:
-      estadoMenuUnico.nombreCentral2 = "OUTPUT";
-      break;
-    case MENU_CONFIG_SURFACE:
-      estadoMenuUnico.nombreCentral2 = "ACTIVE";
-      break;
-    case MENU_MIDI_SURFACE:
-      estadoMenuUnico.nombreCentral2 = "GROUP/NAME";
-      break;
-    default:
-      estadoMenuUnico.nombreCentral2 = "-";
-      break;
-  }
+  estadoMenuUnico.nombreCentral1 = obtenerNombreSubgrupo(estadoMenuUnico.indiceCentral1);
+  estadoMenuUnico.nombreCentral2 = obtenerNombreControl(estadoMenuUnico.indiceCentral1, estadoMenuUnico.indiceCentral2);
 
-  // Inferior
   switch (estadoMenuUnico.indiceSuperior1) {
     case MENU_SEQUENCER:
-      switch (estadoMenuUnico.indiceSuperior2) {
-        case SUBMENU_TRIGGER:      estadoMenuUnico.valorInferiorSeleccionado = secuenciadorActivo[estadoMenuUnico.indiceCentral2] ? "<ON>" : "<OFF>"; break;
-        case SUBMENU_NOTE:         estadoMenuUnico.valorInferiorSeleccionado = notaToNombre(secuenciadorNotas[estadoMenuUnico.indiceCentral2]); break;
-        case SUBMENU_ACTIVE:       estadoMenuUnico.valorInferiorSeleccionado = secuenciadorActivo[estadoMenuUnico.indiceCentral2] ? "<ON>" : "<OFF>"; break;
-        case SUBMENU_ZONE:         estadoMenuUnico.valorInferiorSeleccionado = secuenciadorZona[estadoMenuUnico.indiceCentral2] ? "<ON>" : "<OFF>"; break;
-        case SUBMENU_SEQUENCER:    estadoMenuUnico.valorInferiorSeleccionado = secuenciadorGlobalActivo ? "<ON>" : "<OFF>"; break;
-        case SUBMENU_PRESETS:      estadoMenuUnico.valorInferiorSeleccionado = "<OK/CANCEL>"; break;
-        case SUBMENU_ROUTE:        estadoMenuUnico.valorInferiorSeleccionado = secuenciadorRutaSolo ? "<SOLO>" : secuenciadorRutaActiva ? "<ON>" : "<OFF>"; break;
-        default:                   estadoMenuUnico.valorInferiorSeleccionado = "-"; break;
+      switch (estadoMenuUnico.submenuSuperior) {
+        case SUBMENU_TRIGGER: {
+          Step paso = obtenerPaso(estadoMenuUnico.indiceCentral2);
+          estadoMenuUnico.valorInferiorSeleccionado = paso.active ? "ON" : "OFF";
+          break;
+        }
+        case SUBMENU_NOTE: {
+          Step paso = obtenerPaso(estadoMenuUnico.indiceCentral2);
+          estadoMenuUnico.valorInferiorSeleccionado = notaToNombre(paso.note);
+          break;
+        }
+        case SUBMENU_VELOCITY: {
+          Step paso = obtenerPaso(estadoMenuUnico.indiceCentral2);
+          estadoMenuUnico.valorInferiorSeleccionado = String(paso.velocity) + " %";
+          break;
+        }
+        case SUBMENU_LONG: {
+          Step paso = obtenerPaso(estadoMenuUnico.indiceCentral2);
+          estadoMenuUnico.valorInferiorSeleccionado = String(paso.duration) + " TICKS";
+          break;
+        }
+        case SUBMENU_TOTAL_STEPS:
+          estadoMenuUnico.valorInferiorSeleccionado = String(obtenerTotalSteps());
+          break;
+        case SUBMENU_MAX_STEPS:
+          estadoMenuUnico.valorInferiorSeleccionado = String(obtenerMaxSteps());
+          break;
+        case SUBMENU_MODE:
+          estadoMenuUnico.valorInferiorSeleccionado = modoMono ? "MONO" : "POLY";
+          break;
+        case SUBMENU_LEGATO:
+          estadoMenuUnico.valorInferiorSeleccionado = String(porcentajeLegato) + " %";
+          break;
+        case SUBMENU_CURVE:
+          estadoMenuUnico.valorInferiorSeleccionado = String(porcentajeSustain) + " %";
+          break;
+        case SUBMENU_BPM:
+          estadoMenuUnico.valorInferiorSeleccionado = String(estadoTempo);
+          break;
+        case SUBMENU_BPM_SYNC:
+          estadoMenuUnico.valorInferiorSeleccionado = bpmSyncEnabled ? "ON" : "OFF";
+          break;
+        default:
+          estadoMenuUnico.valorInferiorSeleccionado = "";
       }
       break;
+
     case MENU_PRESETS_SURFACE:
     case MENU_PRESETS_SEQUENCER:
-      estadoMenuUnico.valorInferiorSeleccionado = "<OK/CANCEL>";
+      if (estadoMenuUnico.indiceInferior1 == 0) {
+        estadoMenuUnico.valorInferiorSeleccionado = "OK";
+      } else {
+        estadoMenuUnico.valorInferiorSeleccionado = "CANCEL";
+      }
       break;
+
     case MENU_CONFIG_KEYBOARD:
-      estadoMenuUnico.valorInferiorSeleccionado = tecladoSecuenciaEnabled ? "<ON>" : "<OFF>";
-      break;
     case MENU_CONFIG_SEQUENCER:
     case MENU_CONFIG_SURFACE:
-      estadoMenuUnico.valorInferiorSeleccionado = secuenciadorGlobalActivo ? "<ON>" : "<OFF>";
+      switch (estadoMenuUnico.submenuSuperior) {
+        case SUBMENU_CONFIG_KEYBOARD_OUTPUT:
+          estadoMenuUnico.valorInferiorSeleccionado = tecladoActivo ? "ON" : "OFF";
+          break;
+        case SUBMENU_CONFIG_KEYBOARD_LINK:
+          estadoMenuUnico.valorInferiorSeleccionado = secuenciaTecladoLinkeada ? "ON" : "OFF";
+          break;
+        case SUBMENU_CONFIG_SEQUENCER_OUTPUT:
+          estadoMenuUnico.valorInferiorSeleccionado = !muteSequencerNotes ? "ON" : "OFF";
+          break;
+        case SUBMENU_CONFIG_SURFACE_SEQUENCER:
+          estadoMenuUnico.valorInferiorSeleccionado = secuenciadorZonaActiva ? "ON" : "OFF";
+          break;
+        case SUBMENU_CONFIG_SURFACE_MIDI:
+          estadoMenuUnico.valorInferiorSeleccionado = superficieActiva ? "ON" : "OFF";
+          break;
+        default:
+          estadoMenuUnico.valorInferiorSeleccionado = "";
+      }
       break;
-    case MENU_MIDI_KEYBOARD:
-    case MENU_MIDI_SURFACE:
-      estadoMenuUnico.valorInferiorSeleccionado = "<VALOR>";
-      break;
+
     default:
-      estadoMenuUnico.valorInferiorSeleccionado = "-";
+      estadoMenuUnico.valorInferiorSeleccionado = "";
+  }
+}
+
+void cambiarValorInferior(int delta) {
+  switch (estadoMenuUnico.indiceSuperior1) {
+    case MENU_SEQUENCER:
+      switch (estadoMenuUnico.submenuSuperior) {
+        case SUBMENU_TRIGGER: {
+          Step& paso = secuencia[indicePistaActiva][estadoMenuUnico.indiceCentral2];
+          paso.active = !paso.active;
+          break;
+        }
+        case SUBMENU_NOTE: {
+          Step& paso = secuencia[indicePistaActiva][estadoMenuUnico.indiceCentral2];
+          int nuevaNota = paso.note + delta;
+          if (nuevaNota >= 0 && nuevaNota <= 127) paso.note = nuevaNota;
+          break;
+        }
+        case SUBMENU_VELOCITY: {
+          Step& paso = secuencia[indicePistaActiva][estadoMenuUnico.indiceCentral2];
+          int nuevaVel = paso.velocity + (delta * 8);
+          paso.velocity = constrain(nuevaVel, 0, 127);
+          break;
+        }
+        case SUBMENU_LONG: {
+          Step& paso = secuencia[indicePistaActiva][estadoMenuUnico.indiceCentral2];
+          int nuevaDuracion = paso.duration + delta;
+          paso.duration = constrain(nuevaDuracion, 1, 32);
+          break;
+        }
+        case SUBMENU_TOTAL_STEPS:
+          establecerTotalSteps(obtenerTotalSteps() + delta);
+          break;
+        case SUBMENU_MAX_STEPS:
+          establecerMaxSteps(obtenerMaxSteps() + (delta * 8));
+          break;
+        case SUBMENU_MODE:
+          modoMono = !modoMono;
+          break;
+        case SUBMENU_LEGATO:
+          porcentajeLegato = constrain(porcentajeLegato + delta * 10, 0, 100);
+          break;
+        case SUBMENU_CURVE:
+          porcentajeSustain = constrain(porcentajeSustain + delta * 10, 0, 200);
+          break;
+        case SUBMENU_BPM:
+          estadoTempo = constrain(estadoTempo + delta, 30, 300);
+          break;
+        case SUBMENU_BPM_SYNC:
+          bpmSyncEnabled = !bpmSyncEnabled;
+          break;
+      }
+      break;
+
+    case MENU_CONFIG_KEYBOARD:
+    case MENU_CONFIG_SEQUENCER:
+    case MENU_CONFIG_SURFACE:
+      switch (estadoMenuUnico.submenuSuperior) {
+        case SUBMENU_CONFIG_KEYBOARD_OUTPUT:
+          tecladoActivo = !tecladoActivo;
+          break;
+        case SUBMENU_CONFIG_KEYBOARD_LINK:
+          secuenciaTecladoLinkeada = !secuenciaTecladoLinkeada;
+          break;
+        case SUBMENU_CONFIG_SEQUENCER_OUTPUT:
+          muteSequencerNotes = !muteSequencerNotes;
+          break;
+        case SUBMENU_CONFIG_SURFACE_SEQUENCER:
+          secuenciadorZonaActiva = !secuenciadorZonaActiva;
+          break;
+        case SUBMENU_CONFIG_SURFACE_MIDI:
+          superficieActiva = !superficieActiva;
+          break;
+        default:
+          break;
+      }
       break;
   }
 }
 
-void inicializarMenuUnico() {
-  estadoMenuUnico.zonaActiva = ZONA_SUPERIOR;
-  estadoMenuUnico.subzonaActiva = 0;
-  estadoMenuUnico.indiceSuperior1 = MENU_SEQUENCER;
-  estadoMenuUnico.indiceSuperior2 = SUBMENU_TRIGGER;
-  estadoMenuUnico.indiceCentral1 = 0;
-  estadoMenuUnico.indiceCentral2 = 0;
-  estadoMenuUnico.confirmando = false;
-  estadoMenuUnico.parpadeo = false;
-  estadoMenuUnico.colorFondo = 0x0000;
-  actualizarTextosMenuUnico();
-}
-
-void avanzarZonaMenuUnico() {
-  if (estadoMenuUnico.zonaActiva == ZONA_SUPERIOR && estadoMenuUnico.subzonaActiva == 0) {
-    estadoMenuUnico.subzonaActiva = 1;
-  } else if (estadoMenuUnico.zonaActiva == ZONA_SUPERIOR && estadoMenuUnico.subzonaActiva == 1) {
-    estadoMenuUnico.zonaActiva = ZONA_CENTRAL;
-    estadoMenuUnico.subzonaActiva = 0;
-  } else if (estadoMenuUnico.zonaActiva == ZONA_CENTRAL && estadoMenuUnico.subzonaActiva == 0) {
-    estadoMenuUnico.subzonaActiva = 1;
-  } else if (estadoMenuUnico.zonaActiva == ZONA_CENTRAL && estadoMenuUnico.subzonaActiva == 1) {
-    estadoMenuUnico.zonaActiva = ZONA_INFERIOR;
-    estadoMenuUnico.subzonaActiva = 0;
-  } else {
-    estadoMenuUnico.zonaActiva = ZONA_SUPERIOR;
-    estadoMenuUnico.subzonaActiva = 0;
+bool submenuValidoParaMenu(uint8_t menu, uint8_t submenu) {
+  switch (menu) {
+    case MENU_PRESETS_SURFACE:
+    case MENU_PRESETS_SEQUENCER:
+      return submenu == SUBMENU_PRESETS;
+    case MENU_SEQUENCER:
+      return (submenu >= SUBMENU_TRIGGER && submenu <= SUBMENU_LEGATO) ||
+             submenu == SUBMENU_BPM || submenu == SUBMENU_BPM_SYNC;
+    case MENU_CONFIG_KEYBOARD:
+    case MENU_CONFIG_SEQUENCER:
+    case MENU_CONFIG_SURFACE:
+      return submenu >= SUBMENU_CONFIG_SURFACE_SEQUENCER && submenu <= SUBMENU_CONFIG_SEQUENCER_OUTPUT;
+    default:
+      return false;
   }
-  actualizarTextosMenuUnico();
-}
-
-void clickCortoMenuUnico() {
-  avanzarZonaMenuUnico();
-}
-
-void confirmarAccionMenuUnico() {
-  estadoMenuUnico.confirmando = true;
-}
-
-void cancelarAccionMenuUnico() {
-  estadoMenuUnico.confirmando = false;
 }

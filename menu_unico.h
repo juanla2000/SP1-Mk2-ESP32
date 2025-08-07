@@ -25,15 +25,25 @@ enum TipoMenuSuperior {
 };
 
 enum TipoSubmenuSuperior {
-  SUBMENU_NOTE,
-  SUBMENU_CC,
+  SUBMENU_NONE,
   SUBMENU_TRIGGER,
+  SUBMENU_NOTE,
+  SUBMENU_VELOCITY,
+  SUBMENU_CURVE,
+  SUBMENU_LONG,
+  SUBMENU_TOTAL_STEPS,
+  SUBMENU_MAX_STEPS,
+  SUBMENU_MODE,
+  SUBMENU_LEGATO,
+  SUBMENU_SUSTAIN,
   SUBMENU_PRESETS,
-  SUBMENU_ROUTE,
-  SUBMENU_ACTIVE,
-  SUBMENU_SEQUENCER,
-  SUBMENU_ZONE,
-  SUBMENU_LONG,  // Este era requerido para SEQUENCER
+  SUBMENU_CONFIG_SURFACE_SEQUENCER,
+  SUBMENU_CONFIG_SURFACE_MIDI,
+  SUBMENU_CONFIG_KEYBOARD_OUTPUT,
+  SUBMENU_CONFIG_KEYBOARD_LINK,
+  SUBMENU_CONFIG_SEQUENCER_OUTPUT,
+  SUBMENU_BPM,           // ✅ NUEVO: Edición del tempo BPM
+  SUBMENU_BPM_SYNC,      // ✅ NUEVO: Activar/desactivar sincronía MIDI externa
   NUM_SUBMENUS_SUPERIOR2
 };
 
@@ -47,9 +57,11 @@ struct EstadoMenuUnico {
 
   // Índices seleccionados
   uint8_t indiceSuperior1 = MENU_SEQUENCER;
-  uint8_t indiceSuperior2 = SUBMENU_TRIGGER;
+  uint8_t submenuSuperior = SUBMENU_TRIGGER;
+  uint8_t indiceSuperior2 = 0;
   uint8_t indiceCentral1 = 0;
   uint8_t indiceCentral2 = 0;
+  uint8_t indiceInferior1 = 0; // Declaración ya corregida
 
   // Cantidad de opciones disponibles en cada zona
   uint8_t numOpcionesSuperior1 = NUM_MENUS_SUPERIOR1;
@@ -84,3 +96,15 @@ void clickCortoMenuUnico();
 void confirmarAccionMenuUnico();
 void cancelarAccionMenuUnico();
 void actualizarTextosMenuUnico();
+void cambiarValorInferior(int delta);
+void corregirSubmenuInvalido();
+
+// ================================
+// PRESETS SURFACE / SEQUENCER
+// ================================
+
+extern std::vector<String> archivosPresetsSurface;
+extern std::vector<String> archivosPresetsSequencer;
+
+void cargarListaPresetsSurface();
+void cargarListaPresetsSequencer();

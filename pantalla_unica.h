@@ -10,6 +10,8 @@
 #include "controles.h"
 #include "menu_unico.h"
 
+extern Adafruit_SSD1351 display;
+
 // ================================
 // DEFINICIONES DE COLOR
 // ================================
@@ -20,3 +22,6 @@
 // FUNCIONES DE PANTALLA ÚNICA
 // ================================
 void mostrarPantallaUnica(Adafruit_SSD1351& d);
+
+// ✅ NUEVA función para dibujar texto centrado a diferentes tamaños
+void dibujarTextoCentrado(uint8_t y, const String& texto, uint8_t textSize, uint16_t color);

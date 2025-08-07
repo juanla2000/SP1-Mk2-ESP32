@@ -1,4 +1,4 @@
-//controles.h
+// controles.h
 
 #pragma once
 
@@ -7,6 +7,9 @@
 #include "hardware_config.h"
 
 extern HardwareSerial midiSerial;
+String obtenerNombreGrupo(uint8_t indice);
+String obtenerNombreSubgrupo(uint8_t grupoIndex);
+String obtenerNombreControl(uint8_t grupoIndex, uint8_t idControl);
 
 // Estructura para definir un control físico
 struct Control {
@@ -16,6 +19,7 @@ struct Control {
   uint8_t canal;
   uint8_t cc;
   uint8_t valor;
+  uint8_t mux; // número de MUX (0–8), define si es KNOB (0–6) o SWITCH (7–8). NO editable.
 };
 
 const uint8_t numControles = 108;
@@ -37,9 +41,26 @@ extern unsigned long stepInterval;
 
 extern Adafruit_SSD1351 display;
 
+// ✅ NUEVAS VARIABLES para detectar cambios en entradaEventoNota()
+extern uint8_t ultimaNotaRecibida;
+extern uint8_t ultimaVelocidadRecibida;
+extern uint8_t ultimoCanalRecibido;
+
 // Funciones
 void enviarNotaSecuenciador(uint8_t canal, uint8_t nota, uint8_t velocidad);
 void actualizarValor(uint8_t cc, uint8_t valor);
 void inicializarControles();
 void cargarPresetInicial();
 void enviarNota(uint8_t nota, uint8_t velocidad);
+void enviarTodosLosCCsConParametros();
+void guardarPresetActual(const char* ruta);
+void procesarComandoUART(const String& comando);
+void actualizarUART();
+
+// ✅ ESTADO GLOBAL DEL SISTEMA (BOOT / READY)
+enum EstadoSistema {
+  ESTADO_BOOT,
+  ESTADO_READY
+};
+
+extern EstadoSistema estadoSistema;

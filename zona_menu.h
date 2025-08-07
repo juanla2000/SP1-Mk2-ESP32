@@ -11,3 +11,6 @@ enum ZonaMenu {
   ZONA_CENTRAL,
   ZONA_INFERIOR
 };
+
+// Declaración de función para validar si un submenu pertenece al menú actual
+bool submenuValidoParaMenu(uint8_t menu, uint8_t submenu);

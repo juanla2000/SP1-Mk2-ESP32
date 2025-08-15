@@ -7,6 +7,7 @@
 #include "zona_menu.h"
 #include "hardware_config.h"
 #include "controles.h"
+#include "secuenciador.h"  // Para el tipo Step
 
 String obtenerNombreGrupo(uint8_t indice);
 String obtenerNombreSubgrupo(uint8_t grupoIndex);

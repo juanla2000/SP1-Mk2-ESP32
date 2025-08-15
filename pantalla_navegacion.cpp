@@ -3,11 +3,13 @@
 #include "pantalla_navegacion.h"
 #include "pantalla_unica.h"
 #include "menu_unico.h"
+#include "zona_menu.h"
 #include "controles.h"
 #include "configuracion.h"
+#include "secuenciador.h"  // ✅ Necesario para Step
 
 static int lastA = HIGH;
-static int currentA;
+static int lastB = HIGH;   // ✅ Variable añadida para estado del pin B
 static unsigned long lastDebounce = 0;
 static int currentButton;
 static int lastButton = HIGH;
@@ -19,6 +21,11 @@ unsigned long tiempoUltimaActividad = 0;
 ContenidoPantalla contenidoActual;
 
 extern unsigned long tiempoUltimaInteraccionMenu;
+
+// =============================================
+// ✅ NUEVO: Declaración de función auxiliar
+// =============================================
+void procesarGiroEncoder(int delta);
 
 // ✅ Línea con texto centrado
 void dibujarLineaCentrada(uint8_t y, const String& texto, uint8_t textSize, uint16_t fondo, uint16_t color) {
@@ -180,53 +187,87 @@ void actualizarPantallaSistema() {
   }
 }
 
-// ============================================================
-// ✅ NUEVO BLOQUE: ROTARY ENCODER (LECTURA DIGITAL POLLING)
-// ============================================================
+// =============================================
+// ✅ FUNCIÓN AUXILIAR PARA PROCESAR GIRO ENCODER
+// =============================================
+void procesarGiroEncoder(int delta) {
+  if (pantallaActual == PANTALLA_MENU) {
+    rotarMenu(delta);
+    actualizarTextosMenuUnico();
+    mostrarPantallaUnica(display);
+    tiempoUltimaInteraccionMenu = millis();
+  }
+  // Podemos añadir más comportamientos en otras pantallas aquí
+}
 
+// ============================================================
+// ✅ GESTIÓN COMPLETA DEL ROTARY ENCODER
+// ============================================================
 void inicializarEncoder() {
   pinMode(ENCODER_A_PIN, INPUT_PULLUP);
   pinMode(ENCODER_B_PIN, INPUT_PULLUP);
   pinMode(ENCODER_BUTTON_PIN, INPUT_PULLUP);
+  
+  // Leer estado inicial
+  lastA = digitalRead(ENCODER_A_PIN);
+  lastB = digitalRead(ENCODER_B_PIN);
+  lastButton = digitalRead(ENCODER_BUTTON_PIN);
 }
 
 void gestionarEncoder() {
-  // ... código existente ...
-  if (currentA != lastA && ahora - lastDebounce > 5) {
-    if (currentA == LOW) {
-      int delta = (currentB == HIGH) ? +1 : -1;
-      
-      if (pantallaActual == PANTALLA_MENU) {
-        cambiarValorInferior(delta);
-        actualizarTextosMenuUnico();
-        mostrarPantallaUnica(display);
-        tiempoUltimaInteraccionMenu = ahora;
-      }
-    }
+  unsigned long ahora = millis();
+  static int lastEncoded = 0;
+  
+  // Leer estado actual de los pines
+  int pinA = digitalRead(ENCODER_A_PIN);
+  int pinB = digitalRead(ENCODER_B_PIN);
+  
+  // ----------------------------------------------------
+  // DETECCIÓN DE GIRO (MÁQUINA DE ESTADOS DE CUADRATURA)
+  // ----------------------------------------------------
+  int encoded = (pinA << 1) | pinB;
+  int sum = (lastEncoded << 2) | encoded;
+  
+  // Detectar transiciones válidas para giro antihorario
+  if (sum == 0b1101 || sum == 0b0100 || sum == 0b0010 || sum == 0b1011) {
+    procesarGiroEncoder(-1);
+  } 
+  // Detectar transiciones válidas para giro horario
+  else if (sum == 0b1110 || sum == 0b0111 || sum == 0b0001 || sum == 0b1000) {
+    procesarGiroEncoder(1);
   }
-  lastA = currentA;
+  
+  lastEncoded = encoded;
 
   // ----------------------------------------
-  // DETECCIÓN DE CLIC
+  // DETECCIÓN DE CLIC (CON DEBOUNCE MEJORADO)
   // ----------------------------------------
-  static unsigned long lastButtonChange = 0;
+  int currentButton = digitalRead(ENCODER_BUTTON_PIN);
+  
+  // Detectar cambio de estado
   if (currentButton != lastButton) {
     lastButtonChange = ahora;
     lastButton = currentButton;
   }
-
-  if (lastButton == LOW && (ahora - lastButtonChange) > 50) {
-    // Clic detectado
-    if (pantallaActual == PANTALLA_MENU) {
-      clickCortoMenuUnico();
-      actualizarTextosMenuUnico();
-      mostrarPantallaUnica(display);
-      tiempoUltimaInteraccionMenu = ahora;
-    } else {
-      clicEncoder();  // entra en menú desde fuera
+  
+  // Detectar pulsación mantenida (50ms para evitar rebotes)
+  if (currentButton == LOW && (ahora - lastButtonChange) > 50) {
+    // Solo procesar si es una pulsación nueva
+    if (lastButtonChange == ahora - 50) {
+      if (pantallaActual == PANTALLA_MENU) {
+        clickCortoMenuUnico();
+        actualizarTextosMenuUnico();
+        mostrarPantallaUnica(display);
+        tiempoUltimaInteraccionMenu = ahora;
+      } else {
+        clicEncoder();
+      }
     }
-
-    while (digitalRead(ENCODER_BUTTON_PIN) == LOW);  // espera a soltar
-    delay(10);  // rebote
+    
+    // Esperar hasta que se suelte el botón
+    while (digitalRead(ENCODER_BUTTON_PIN) == LOW) {
+      delay(1);
+    }
+    delay(10); // Pequeño delay adicional para estabilizar
   }
 }

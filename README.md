@@ -1,166 +1,90 @@
 
-# SP1 Mk2 v0.6— Firmware Profesional para Controlador MIDI Modular (ESP32-S3)
+# SP1 Mk2 MIDI Controller Firmware - Versión 0.6.1
 
-Firmware completo para el módulo SP1 Mk2, desarrollado sobre ESP32-S3, con navegación OLED por zonas, gestión avanzada de presets, secuenciador por pasos integrado, sincronización MIDI externa por USB y DIN, y comunicación UART con el módulo SP1 Mk1 que gestiona 108 controles físicos multiplexados.
+## Descripción General
+Firmware avanzado para controlador MIDI SP1 Mk2 que combina funcionalidades de superficie de control MIDI, teclado MIDI y secuenciador paso a paso. Diseñado para ESP32-S3 con interfaz OLED y navegación por encoder.
 
----
+## Características Principales
 
-## 🧠 Arquitectura general
+### 🎛️ Sistema de Menú Unificado
+- Interfaz estructurada en 3 zonas:
+  - **Superior**: Menús principales/submenús
+  - **Central**: Parámetros de grupo/controles
+  - **Inferior**: Valores/acciones
+- Navegación por encoder (giro + pulsación)
+- Parpadeo visual para selección activa
+- Timeout automático para volver a pantalla principal
 
-```
-                [ HOST USB ]
-                     ▲
-                 MIDI USB
-                     │
-        ┌────────────┴────────────┐
-        │       SP1 Mk2 (ESP32-S3)│
-        └────────────┬────────────┘
-                     │ UART (31250 bps)
-                     ▼
-        ┌────────────┴────────────┐
-        │       SP1 Mk1 (Arduino) │
-        └─────────────────────────┘
-```
+### ⏱️ Secuenciador Paso a Paso
+- **4 pistas** independientes
+- Hasta **64 pasos configurables** por pista
+- Parámetros editables por paso:
+  - Activación (On/Off)
+  - Nota musical (0-127)
+  - Velocidad (0-127)
+  - Duración (ticks)
+- Configuración global:
+  - Tempo (30-300 BPM)
+  - Sincronización MIDI externa (MIDI Clock)
+  - Modo Mono/Poli
+  - Ajustes de Legato/Sustain
 
----
+### 🎚️ Gestión de Controles MIDI
+- **108 controles físicos** organizados
+- Configuración por control:
+  - Nombre personalizado
+  - Canal MIDI (0-15)
+  - Número CC (0-127)
+  - Valor actual (0-127)
+- Identificación mediante **9 multiplexores**
 
-## 📁 Estructura del proyecto
+### 💾 Sistema de Presets
+- Almacenamiento en tarjeta SD (CSV)
+- Tipos:
+  - Presets de Superficie (controladores)
+  - Presets de Secuenciador
+- Carga/guardado de configuración completa
 
-- `FIRMWARE_SP1_Mk2_ESP32S3.ino`: núcleo del sistema, ciclo `setup()` + `loop()`.
-- `hardware_config.h`: mapeo de pines físicos.
-- `controles.*`: lectura física + comunicación UART + envío MIDI.
-- `configuracion.*`: flags de estado global, persistencia, opciones CONFIG.
-- `secuenciador.*`: motor de reproducción, presets, BPM sync.
-- `menu_unico.*`: menú dinámico por zonas.
-- `pantalla_unica.*`: render OLED por zonas.
-- `pantalla_navegacion.*`: navegación visual y eventos.
-- `pantalla_inicio.*`: animación de arranque.
-- `/Presets Surface/`: configuración de superficie en `.csv`.
-- `/Presets Seq/`: configuración secuenciador en `.csv`.
+### 🔌 Comunicación MIDI
+- Dual:
+  - **USB MIDI** (TinyUSB)
+  - **UART MIDI** (31250 baudios)
+- MIDI Thru configurable
+- Sincronización con MIDI Clock externo
 
----
+### 🖥️ Sistema de Pantallas Inteligente
+- Modos:
+  - **Home**: Estado del sistema
+  - **Standby**: Eventos MIDI en tiempo real
+  - **Menú**: Navegación completa
+- Actualización por zonas
+- Animación de inicio personalizada
 
-## ✅ Funciones implementadas
+## Estructura del Código
 
-### 🔧 Configuración global
+### Módulos Principales:
+| Módulo | Función |
+|--------|---------|
+| `controles` | Gestión de controles físicos y presets |
+| `secuenciador` | Motor del secuenciador paso a paso |
+| `menu_unico` | Lógica completa del sistema de menús |
+| `pantalla_navegacion` | Máquina de estados de pantallas |
+| `pantalla_unica` | Renderizado de interfaz |
+| `configuracion` | Parámetros globales del sistema |
+| `zona_menu` | Definición de zonas interactivas |
 
-- `cargarConfig()`, `guardarConfig()`: guarda y carga `bpmSyncEnabled`, `muteSequencerNotes`, `secuenciaTecladoLinkeada`.
-- EEPROM virtual por bytes 0–2.
-- Pines definidos en `hardware_config.h`.
-
-### 🕹️ Control físico
-
-- 108 controles multiplexados recibidos vía UART Mk1.
-- Campos por control: `mux`, `cc`, `canal`, `valor`.
-- Recepción de comandos `#MUX`, `#CC`, `#VAL`.
-- Mapeo dinámico desde CSV: `SERUM_SP1_SURFACE_PRESET01.csv`.
-
-### 🧠 Secuenciador
-
-- 4 secuencias paralelas.
-- Matriz `Step secuencia[][]`, campos: `active`, `note`, `velocity`, `inicio`, `duration`.
-- Control MIDI externo por CC 20–23.
-- Funciones:
-  - `avanzarPaso()`
-  - `apagarNotaSecuenciador()`
-  - `obtenerPaso()`, `editarPaso()`
-- Flags: `modoMono`, `porcentajeSustain`, `porcentajeLegato`, `secuenciadorGlobalActivo`, `muteSequencerNotes`.
-
-### 🕒 Sincronización externa (Clock MIDI)
-
-- `bpmSyncEnabled`: activa entrada `0xF8` desde USB o UART.
-- `midiClockTicks`: incrementa al recibir Clock.
-- `ticksPorStep`: define frecuencia de avance (por defecto = 6).
-- `actualizarClockUSB()`: captura `0xF8` desde `usb_midi.read()`.
-
-### 💾 Gestión de presets
-
-- `guardarPresetSecuenciador()`, `cargarPresetSecuenciador()`.
-- Formato `CSV`, estructuras `step`, `track`, `config`.
-- Superficie y secuencias separadas (`/Presets Surface/`, `/Presets Seq/`).
-
-### 🖥️ Pantallas OLED por zonas
-
-- 5 líneas por pantalla: 2 sup., 2 cent., 1 inf.
-- Navegación por encoder rotatorio.
-- `pantallaActual`, `pantallaAnterior`, `tiempoUltimaActividad`.
-- `mostrarPantallaUnica()`, `mostrarMenuPresets()`.
-
-### 🧭 Menú único estructurado
-
-- Navegación por zonas: `ZONA_SUPERIOR`, `ZONA_CENTRAL`, `ZONA_INFERIOR`.
-- Clic corto/largo para cambiar entre opciones y confirmar acciones.
-- Menús activos: PRESETS, SEQUENCER, CONFIG.
-
----
-
-## 📌 Variables globales clave
-
-| Variable                   | Descripción |
-|----------------------------|-------------|
-| `estadoTempo`             | BPM manual |
-| `bpmSyncEnabled`          | Activación de Clock externo |
-| `midiClockTicks`          | Cuenta mensajes 0xF8 |
-| `ticksPorStep`            | Número de ticks por paso |
-| `muteSequencerNotes`      | Silencio temporal |
-| `modoMono`                | Mono vs. polifonía |
-| `secuenciaTecladoLinkeada`| Sincronía con teclado |
-| `porcentajeSustain`       | Duración de nota |
-| `porcentajeLegato`        | Superposición entre notas |
-| `secuenciadorGlobalActivo`| Pausa general del secuenciador |
-
----
-
-## 🔌 Pines de hardware
-
-| Nombre lógico      | GPIO | Función                  |
-|--------------------|------|--------------------------|
-| MIDI_UART_TX       | 14   | Salida MIDI DIN          |
-| MIDI_UART_RX       | 13   | Entrada MIDI DIN         |
-| ENCODER_A_PIN      | 34   | Encoder menú A           |
-| ENCODER_B_PIN      | 35   | Encoder menú B           |
-| ENCODER_BUTTON_PIN | 36   | Botón encoder            |
-| OLED_CS            | 5    | Chip select OLED         |
-| OLED_DC            | 16   | OLED D/C                 |
-| OLED_RST           | 17   | OLED Reset               |
-| SD_CS              | 10   | Chip select SD card      |
-
----
-
-## 🎚️ Menú SEQUENCER – BMP y SYNC
-
-| ID  | GRUPO         | ZONA SUP | ZONA CENT         | ZONA INF       | FUNCIONALIDAD                          |
-|-----|---------------|----------|--------------------|----------------|----------------------------------------|
-| 21  | MENU SEQUENCER| SEQUENCER BMP | SELECT / VALUE   | `[BMP VALOR]` | Ajusta tempo manual                   |
-| 22  | MENU SEQUENCER| SEQUENCER SYNC| SELECT / BMP SYNC| `<ON / OFF>`  | Activa Clock MIDI externo              |
-
----
-
-## 🔁 Función de sincronía avanzada
-
-- `usb_midi.read()` y UART detectan `0xF8`.
-- Si `bpmSyncEnabled`, se ignora `millis()` y se avanza por `ticksPorStep`.
-- Compatible con DAWs: Ableton, FL Studio, Bitwig, MPC, etc.
-
----
-
-## 📦 Librerías necesarias
-
-- `Adafruit_GFX`, `Adafruit_SSD1351`, `Adafruit_BusIO`
-- `Encoder`, `EncoderButton`, `Bounce2`
-- `SD`, `SPI`, `Wire`, `FS`
-- `MIDI Library`, `Adafruit_TinyUSB`
-
----
-
-## 🛠️ Futuras ampliaciones
-
-- Menú de rejilla (rejilla de paso: 1/4, 1/8, 1/16)
-- Visualización de compás y grid en pantalla
-- Soporte para `0xFA` (START), `0xFC` (STOP), `0xFB` (CONTINUE)
-- Delete directo de presets
-- Expansión multi-secuenciador y modulación cruzada
-
----
-
-© 2025 Burdalo Design — Tatxanka
+### Flujo Principal:
+```mermaid
+graph TD
+    A[Inicio] --> B[Pantalla Bienvenida]
+    B --> C[Inicializar Hardware]
+    C --> D[Cargar Configuración]
+    D --> E[Bucle Principal]
+    E --> F[Gestionar MIDI USB]
+    E --> G[Gestionar MIDI UART]
+    E --> H[Actualizar Secuenciador]
+    E --> I[Gestionar Encoder]
+    E --> J[Actualizar Pantalla]
+    J --> K{Menú Visible?}
+    K -->|Sí| L[Actualizar Menú]
+    K -->|No| M[Actualizar Pantalla Actual]

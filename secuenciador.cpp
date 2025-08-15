@@ -15,9 +15,6 @@ uint8_t totalSteps[NUM_SEQUENCERS] = {16, 16, 16, 16};
 uint8_t maxSteps[NUM_SEQUENCERS] = {32, 32, 32, 32};
 uint8_t canalSecuenciador = 0;
 uint8_t indicePasoActual[NUM_SEQUENCERS] = {0};
-uint8_t porcentajeLegato = 0;
-uint8_t porcentajeSustain = 100;
-bool modoMono = true;
 
 bool secuenciadorActivo[NUM_SEQUENCERS] = {true, false, false, false};
 uint8_t secuenciadorNotas[NUM_SEQUENCERS] = {60, 62, 64, 65};

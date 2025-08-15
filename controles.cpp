@@ -3,6 +3,7 @@
 #include "controles.h"
 #include <SD.h>
 #include <MIDI.h>
+#include "menu_unico.h"  // Obtener nombres de grupo
 #include "pantalla_navegacion.h"
 #include "configuracion.h"  // ✅ acceso a bpmSyncEnabled y midiClockTicks
 
@@ -17,7 +18,6 @@ bool midiThruEnabled = true;
 bool shiftPulsado = false;
 unsigned long tiempoShift = 0;
 bool cambiandoZona = false;
-bool muteSequencerNotes = false;
 
 unsigned long tiempoUltimaInteraccionMenu = 0;
 bool menuActivoAnterior = false;

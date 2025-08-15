@@ -207,8 +207,12 @@ void guardarPresetActual(const char* ruta) {
 }
 
 String obtenerNombreGrupo(uint8_t indice) {
-  if (indice >= numControles) return "";
-  return controles[indice].grupo;
+  if (indice >= NUM_MENUS_SUPERIOR1) return "UNKNOWN";
+  const char* nombres[] = {
+    "KEYBOARD", "SURFACE", "SEQUENCER", "PRESETS SURF", 
+    "PRESETS SEQ", "CFG KEY", "CFG SEQ", "CFG SURF"
+  };
+  return nombres[indice];
 }
 
 String obtenerNombreSubgrupo(uint8_t grupoIndex) {

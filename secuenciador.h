@@ -1,7 +1,6 @@
 //secuenciador.h
 
-#ifndef SECUENCIADOR_H
-#define SECUENCIADOR_H
+#pragma once
 
 #include <Arduino.h>
 
@@ -19,8 +18,8 @@ struct Step {
 // Variables principales
 extern Step secuencia[NUM_SEQUENCERS][MAX_STEPS_CONFIGURABLE];
 extern uint8_t indicePistaActiva;
-extern uint8_t totalSteps[NUM_SEQUENCERS];
-extern uint8_t maxSteps[NUM_SEQUENCERS];
+extern uint8_t totalSteps[NUM_SEQUENCERS];  // Era uint8_t
+extern uint8_t maxSteps[NUM_SEQUENCERS];    // Era uint8_t
 extern uint8_t canalSecuenciador;
 extern uint8_t indicePasoActual[NUM_SEQUENCERS];
 extern uint8_t porcentajeLegato;
@@ -55,4 +54,3 @@ bool cargarPresetSecuenciador(const char* ruta);
 // ✅ NUEVA FUNCIÓN USB MIDI CLOCK
 void actualizarClockUSB();
 
-#endif

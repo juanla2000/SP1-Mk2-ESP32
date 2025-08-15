@@ -12,6 +12,11 @@ bool bpmSyncEnabled = false;            // ✅ NUEVO: sincronía MIDI externa de
 volatile uint8_t midiClockTicks = 0;    // ✅ NUEVO: contador de ticks de reloj MIDI externo
 const uint8_t ticksPorStep = 6;         // ✅ NUEVO: 6 ticks MIDI = 1/16 nota → 16 pasos por compás
 
+uint8_t porcentajeLegato = 0;
+uint8_t porcentajeSustain = 100;
+bool modoMono = true;
+bool muteSequencerNotes = false;  // ✅ Coherencia con menu_unico
+
 // Variables adicionales requeridas por menu_unico.cpp
 bool tecladoActivo = true;          // Activa y desactiva la entrada MIDI de un teclado o instrumento externo
 bool secuenciadorZonaActiva = true; // Activa la zona dedicada en la superficie de control al secuenciador

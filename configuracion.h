@@ -1,7 +1,14 @@
 // configuracion.h
 
 #pragma once
+
 #include <Arduino.h>
+
+// configuracion.h (añadir al final)
+extern uint8_t porcentajeLegato;
+extern uint8_t porcentajeSustain;
+extern bool modoMono;
+extern bool muteSequencerNotes;  // ✅ Requerido en menu_unico.cpp
 
 // ==========================
 // VARIABLES GLOBALES DE CONFIGURACIÓN
@@ -27,6 +34,32 @@ extern bool tecladoSecuenciaEnabled;
 extern bool tecladoActivo;
 extern bool secuenciadorZonaActiva;
 extern bool superficieActiva;
+
+// ==========================
+// SISTEMA DE MENÚ (NUEVO)
+// ==========================
+
+// Estados de navegación del menú
+enum EstadoMenu {
+    MENU_INACTIVO,
+    MENU_FILA1,
+    MENU_FILA2,
+    MENU_FILA3,
+    MENU_FILA4
+};
+
+// Estructura para guardar el estado del menú
+struct MenuState {
+    EstadoMenu estadoActual;
+    uint8_t seleccionFila1;
+    uint8_t seleccionFila2;
+    uint8_t seleccionFila3;
+    uint8_t seleccionFila4;
+    unsigned long ultimaInteraccion;
+};
+
+// Variable global del estado del menú
+extern MenuState menuState;
 
 // ==========================
 // FUNCIÓN DE CONFIGURACIÓN

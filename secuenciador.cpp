@@ -53,9 +53,10 @@ void inicializarSecuenciador() {
 void actualizarClockUSB() {
   if (!bpmSyncEnabled) return;
 
-  int midiByte;
-  while ((midiByte = usb_midi.read()) != -1) {
-    if ((uint8_t)midiByte == 0xF8) {
+  uint8_t midiMsg[3];
+  while (usb_midi.available() >= 3) {
+    usb_midi.readBytes(midiMsg, 3);
+    if (midiMsg[0] == 0xF8) {
       midiClockTicks++;
     }
   }

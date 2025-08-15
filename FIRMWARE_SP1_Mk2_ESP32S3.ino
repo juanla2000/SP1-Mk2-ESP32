@@ -11,6 +11,7 @@
 #include "controles.h"
 #include "configuracion.h"
 #include "secuenciador.h"
+#include "zona_menu.h"
 #include <Adafruit_TinyUSB.h>
 
 Adafruit_USBD_MIDI usb_midi;

@@ -9,6 +9,22 @@
 
 EstadoMenuUnico estadoMenuUnico;
 
+// ============================================================
+// CORRECCIÓN: Declaraciones extern para variables compartidas
+// ============================================================
+extern bool modoMono;
+extern bool bpmSyncEnabled;
+extern bool secuenciaTecladoLinkeada;
+extern bool tecladoActivo;
+extern bool secuenciadorZonaActiva;
+extern bool superficieActiva;
+extern bool muteSequencerNotes;
+extern uint16_t estadoTempo;
+extern uint8_t porcentajeLegato;
+extern uint8_t porcentajeSustain;
+extern uint8_t indicePistaActiva;
+extern Step secuencia[NUM_SEQUENCERS][MAX_STEPS_CONFIGURABLE];
+
 void corregirSubmenuInvalido() {
   if (!submenuValidoParaMenu(estadoMenuUnico.indiceSuperior1, estadoMenuUnico.submenuSuperior)) {
     switch (estadoMenuUnico.indiceSuperior1) {
@@ -199,11 +215,14 @@ void cambiarValorInferior(int delta) {
           break;
         }
         case SUBMENU_TOTAL_STEPS:
-          establecerTotalSteps(obtenerTotalSteps() + delta);
+          establecerTotalSteps(constrain(obtenerTotalSteps() + delta, 1, obtenerMaxSteps()));
           break;
-        case SUBMENU_MAX_STEPS:
-          establecerMaxSteps(obtenerMaxSteps() + (delta * 8));
+        case SUBMENU_MAX_STEPS: {
+          uint8_t nuevoMax = obtenerMaxSteps() + (delta * 8);
+          nuevoMax = constrain(nuevoMax, 8, MAX_STEPS_CONFIGURABLE);
+          establecerMaxSteps(nuevoMax);
           break;
+        }
         case SUBMENU_MODE:
           modoMono = !modoMono;
           break;
@@ -245,22 +264,5 @@ void cambiarValorInferior(int delta) {
           break;
       }
       break;
-  }
-}
-
-bool submenuValidoParaMenu(uint8_t menu, uint8_t submenu) {
-  switch (menu) {
-    case MENU_PRESETS_SURFACE:
-    case MENU_PRESETS_SEQUENCER:
-      return submenu == SUBMENU_PRESETS;
-    case MENU_SEQUENCER:
-      return (submenu >= SUBMENU_TRIGGER && submenu <= SUBMENU_LEGATO) ||
-             submenu == SUBMENU_BPM || submenu == SUBMENU_BPM_SYNC;
-    case MENU_CONFIG_KEYBOARD:
-    case MENU_CONFIG_SEQUENCER:
-    case MENU_CONFIG_SURFACE:
-      return submenu >= SUBMENU_CONFIG_SURFACE_SEQUENCER && submenu <= SUBMENU_CONFIG_SEQUENCER_OUTPUT;
-    default:
-      return false;
   }
 }

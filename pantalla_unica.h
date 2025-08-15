@@ -17,6 +17,9 @@ extern Adafruit_SSD1351 display;
 // ================================
 #define BLACK 0x0000
 #define WHITE 0xFFFF
+#define COLOR_FONDO_MENU 0x0000   // Negro
+#define COLOR_TEXTO_NORMAL 0xFFFF // Blanco
+#define COLOR_TEXTO_PARPADEO 0x0000 // Negro (para parpadeo)
 
 // ================================
 // FUNCIONES DE PANTALLA ÚNICA

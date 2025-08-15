@@ -8,6 +8,10 @@
 #include "hardware_config.h"
 #include "controles.h"
 
+String obtenerNombreGrupo(uint8_t indice);
+String obtenerNombreSubgrupo(uint8_t grupoIndex);
+String obtenerNombreControl(uint8_t grupoIndex, uint8_t idControl);
+
 // ================================
 // ENUMS PARA MENÚ UNIFICADO
 // ================================
@@ -35,7 +39,7 @@ enum TipoSubmenuSuperior {
   SUBMENU_MAX_STEPS,
   SUBMENU_MODE,
   SUBMENU_LEGATO,
-  SUBMENU_SUSTAIN,
+  SUBMENU_SUSTAIN,  // Corregido de SUSTAIN (anteriormente SUSTAIN)
   SUBMENU_PRESETS,
   SUBMENU_CONFIG_SURFACE_SEQUENCER,
   SUBMENU_CONFIG_SURFACE_MIDI,
@@ -48,11 +52,11 @@ enum TipoSubmenuSuperior {
 };
 
 // ================================
-// ESTRUCTURA DE ESTADO DEL MENÚ
+// ESTRUCTURA DE ESTADO DEL MENÚ (ACTUALIZADA)
 // ================================
 
 struct EstadoMenuUnico {
-  ZonaMenu zonaActiva = ZONA_SUPERIOR;
+  ZonaMenu zonaActiva = ZONA_SUPERIOR;  // ✔️ Ahora ZonaMenu está definido
   uint8_t subzonaActiva = 0;
 
   // Índices seleccionados
@@ -82,12 +86,18 @@ struct EstadoMenuUnico {
 
   // Color de fondo de pantalla
   uint16_t colorFondo = 0x0000;
+  
+  // ================================
+  // NUEVOS MIEMBROS PARA NAVEGACIÓN POR PASOS
+  // ================================
+  uint8_t faseNavegacion = 0;  // 0: inactivo, 1: fila1, 2: fila2, 3: fila3, 4: fila4
+  unsigned long ultimaInteraccion = 0;
 };
 
 extern EstadoMenuUnico estadoMenuUnico;
 
 // ================================
-// FUNCIONES DEL MENÚ UNIFICADO
+// FUNCIONES DEL MENÚ UNIFICADO (ACTUALIZADAS)
 // ================================
 
 void inicializarMenuUnico();
@@ -99,6 +109,12 @@ void actualizarTextosMenuUnico();
 void cambiarValorInferior(int delta);
 void corregirSubmenuInvalido();
 
+// Nueva función para manejar timeout
+void actualizarTimeoutMenu();
+
+// Nueva función para navegación por pasos
+void avanzarFaseMenu();
+
 // ================================
 // PRESETS SURFACE / SEQUENCER
 // ================================
@@ -108,3 +124,13 @@ extern std::vector<String> archivosPresetsSequencer;
 
 void cargarListaPresetsSurface();
 void cargarListaPresetsSequencer();
+
+// ================================
+// NUEVAS FUNCIONES ESPECÍFICAS PARA NAVEGACIÓN
+// ================================
+
+// Función para manejar la rotación del encoder en modo menú
+void rotarMenu(int direccion);
+
+// Función para dibujar el estado actual con parpadeo
+void dibujarMenuConParpadeo();

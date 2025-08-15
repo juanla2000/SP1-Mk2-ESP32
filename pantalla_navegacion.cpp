@@ -6,6 +6,13 @@
 #include "controles.h"
 #include "configuracion.h"
 
+static int lastA = HIGH;
+static int currentA;
+static unsigned long lastDebounce = 0;
+static int currentButton;
+static int lastButton = HIGH;
+static unsigned long lastButtonChange = 0;
+
 PantallaSistema pantallaActual = PANTALLA_HOME;
 PantallaSistema pantallaAnterior = PANTALLA_HOME;
 unsigned long tiempoUltimaActividad = 0;
@@ -184,23 +191,11 @@ void inicializarEncoder() {
 }
 
 void gestionarEncoder() {
-  static bool lastA = digitalRead(ENCODER_A_PIN);
-  static bool lastButton = true;
-  static unsigned long lastDebounce = 0;
-
-  bool currentA = digitalRead(ENCODER_A_PIN);
-  bool currentB = digitalRead(ENCODER_B_PIN);
-  bool currentButton = digitalRead(ENCODER_BUTTON_PIN);
-  unsigned long ahora = millis();
-
-  // ----------------------------------------
-  // DETECCIÓN DE GIRO (Encoder A cambió)
-  // ----------------------------------------
+  // ... código existente ...
   if (currentA != lastA && ahora - lastDebounce > 5) {
-    lastDebounce = ahora;
     if (currentA == LOW) {
       int delta = (currentB == HIGH) ? +1 : -1;
-
+      
       if (pantallaActual == PANTALLA_MENU) {
         cambiarValorInferior(delta);
         actualizarTextosMenuUnico();

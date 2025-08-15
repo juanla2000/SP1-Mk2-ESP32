@@ -13,6 +13,22 @@ String obtenerNombreSubgrupo(uint8_t grupoIndex);
 String obtenerNombreControl(uint8_t grupoIndex, uint8_t idControl);
 
 // ================================
+// DECLARACIONES EXTERN PARA VARIABLES COMPARTIDAS
+// ================================
+extern bool modoMono;
+extern bool bpmSyncEnabled;
+extern bool secuenciaTecladoLinkeada;
+extern bool tecladoActivo;
+extern bool secuenciadorZonaActiva;
+extern bool superficieActiva;
+extern bool muteSequencerNotes;
+extern uint16_t estadoTempo;
+extern uint8_t porcentajeLegato;
+extern uint8_t porcentajeSustain;
+extern uint8_t indicePistaActiva;
+extern Step secuencia[NUM_SEQUENCERS][MAX_STEPS_CONFIGURABLE];
+
+// ================================
 // ENUMS PARA MENÚ UNIFICADO
 // ================================
 

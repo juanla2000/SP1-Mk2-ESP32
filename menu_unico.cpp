@@ -9,21 +9,236 @@
 
 EstadoMenuUnico estadoMenuUnico;
 
-// ============================================================
-// CORRECCIÓN: Declaraciones extern para variables compartidas
-// ============================================================
-extern bool modoMono;
-extern bool bpmSyncEnabled;
-extern bool secuenciaTecladoLinkeada;
-extern bool tecladoActivo;
-extern bool secuenciadorZonaActiva;
-extern bool superficieActiva;
-extern bool muteSequencerNotes;
-extern uint16_t estadoTempo;
-extern uint8_t porcentajeLegato;
-extern uint8_t porcentajeSustain;
-extern uint8_t indicePistaActiva;
-extern Step secuencia[NUM_SEQUENCERS][MAX_STEPS_CONFIGURABLE];
+// ================================
+// IMPLEMENTACIÓN DE FUNCIONES DE MENÚ
+// ================================
+
+void inicializarMenuUnico() {
+  estadoMenuUnico.zonaActiva = ZONA_SUPERIOR;
+  estadoMenuUnico.subzonaActiva = 0;
+  estadoMenuUnico.indiceSuperior1 = MENU_SEQUENCER;
+  estadoMenuUnico.submenuSuperior = SUBMENU_TRIGGER;
+  estadoMenuUnico.indiceSuperior2 = 0;
+  estadoMenuUnico.indiceCentral1 = 0;
+  estadoMenuUnico.indiceCentral2 = 0;
+  estadoMenuUnico.indiceInferior1 = 0;
+  estadoMenuUnico.confirmando = false;
+  estadoMenuUnico.parpadeo = false;
+  estadoMenuUnico.faseNavegacion = 0;
+  estadoMenuUnico.ultimaInteraccion = millis();
+  estadoMenuUnico.colorFondo = 0x0000;
+  
+  corregirSubmenuInvalido();
+  actualizarTextosMenuUnico();
+}
+
+void avanzarZonaMenuUnico() {
+  switch (estadoMenuUnico.zonaActiva) {
+    case ZONA_SUPERIOR:
+      estadoMenuUnico.zonaActiva = ZONA_CENTRAL;
+      estadoMenuUnico.subzonaActiva = 0;
+      break;
+    case ZONA_CENTRAL:
+      estadoMenuUnico.zonaActiva = ZONA_INFERIOR;
+      estadoMenuUnico.subzonaActiva = 0;
+      break;
+    case ZONA_INFERIOR:
+      estadoMenuUnico.zonaActiva = ZONA_SUPERIOR;
+      estadoMenuUnico.subzonaActiva = 0;
+      break;
+  }
+  estadoMenuUnico.ultimaInteraccion = millis();
+}
+
+void clickCortoMenuUnico() {
+  estadoMenuUnico.ultimaInteraccion = millis();
+  
+  switch (estadoMenuUnico.zonaActiva) {
+    case ZONA_SUPERIOR:
+      if (estadoMenuUnico.subzonaActiva == 0) {
+        // Cambiar menú principal
+        estadoMenuUnico.indiceSuperior1++;
+        if (estadoMenuUnico.indiceSuperior1 >= NUM_MENUS_SUPERIOR1) {
+          estadoMenuUnico.indiceSuperior1 = 0;
+        }
+        corregirSubmenuInvalido();
+      } else {
+        // Cambiar submenú
+        estadoMenuUnico.submenuSuperior++;
+        if (!submenuValidoParaMenu(estadoMenuUnico.indiceSuperior1, estadoMenuUnico.submenuSuperior)) {
+          // Buscar el siguiente submenú válido
+          for (uint8_t i = 0; i < NUM_SUBMENUS_SUPERIOR2; i++) {
+            if (submenuValidoParaMenu(estadoMenuUnico.indiceSuperior1, i)) {
+              estadoMenuUnico.submenuSuperior = i;
+              break;
+            }
+          }
+        }
+      }
+      break;
+      
+    case ZONA_CENTRAL:
+      if (estadoMenuUnico.subzonaActiva == 0) {
+        // Cambiar grupo/pista
+        estadoMenuUnico.indiceCentral1++;
+        if (estadoMenuUnico.indiceCentral1 >= 4) { // 4 pistas máximo
+          estadoMenuUnico.indiceCentral1 = 0;
+        }
+        indicePistaActiva = estadoMenuUnico.indiceCentral1;
+      } else {
+        // Cambiar paso/control
+        estadoMenuUnico.indiceCentral2++;
+        if (estadoMenuUnico.indiceCentral2 >= 16) { // 16 pasos por defecto
+          estadoMenuUnico.indiceCentral2 = 0;
+        }
+      }
+      break;
+      
+    case ZONA_INFERIOR:
+      // En zona inferior, avanzar a siguiente zona
+      avanzarZonaMenuUnico();
+      break;
+  }
+  
+  actualizarTextosMenuUnico();
+}
+
+void confirmarAccionMenuUnico() {
+  estadoMenuUnico.confirmando = true;
+  estadoMenuUnico.ultimaInteraccion = millis();
+  
+  // Implementar acciones específicas según el menú activo
+  switch (estadoMenuUnico.indiceSuperior1) {
+    case MENU_PRESETS_SURFACE:
+    case MENU_PRESETS_SEQUENCER:
+      // Cargar preset seleccionado
+      if (estadoMenuUnico.indiceInferior1 == 0) {
+        // Acción "OK" - cargar preset
+        // TODO: Implementar carga de preset
+      }
+      break;
+      
+    default:
+      // Para otros menús, simplemente confirmar el cambio
+      break;
+  }
+  
+  estadoMenuUnico.confirmando = false;
+}
+
+void cancelarAccionMenuUnico() {
+  estadoMenuUnico.confirmando = false;
+  estadoMenuUnico.ultimaInteraccion = millis();
+  // Restaurar valores anteriores si es necesario
+}
+
+void actualizarTimeoutMenu() {
+  if (millis() - estadoMenuUnico.ultimaInteraccion > 5000) {
+    // Timeout del menú - volver a pantalla anterior
+    // Esta lógica se maneja en pantalla_navegacion.cpp
+  }
+}
+
+void avanzarFaseMenu() {
+  estadoMenuUnico.faseNavegacion++;
+  if (estadoMenuUnico.faseNavegacion > 4) {
+    estadoMenuUnico.faseNavegacion = 0;
+  }
+  estadoMenuUnico.ultimaInteraccion = millis();
+}
+
+void rotarMenu(int direccion) {
+  estadoMenuUnico.ultimaInteraccion = millis();
+  
+  switch (estadoMenuUnico.zonaActiva) {
+    case ZONA_SUPERIOR:
+      if (estadoMenuUnico.subzonaActiva == 0) {
+        // Rotar menú principal
+        estadoMenuUnico.indiceSuperior1 += direccion;
+        if (estadoMenuUnico.indiceSuperior1 >= NUM_MENUS_SUPERIOR1) {
+          estadoMenuUnico.indiceSuperior1 = NUM_MENUS_SUPERIOR1 - 1;
+        }
+        if (estadoMenuUnico.indiceSuperior1 < 0) {
+          estadoMenuUnico.indiceSuperior1 = 0;
+        }
+        corregirSubmenuInvalido();
+      } else {
+        // Rotar submenú
+        do {
+          estadoMenuUnico.submenuSuperior += direccion;
+          if (estadoMenuUnico.submenuSuperior >= NUM_SUBMENUS_SUPERIOR2) {
+            estadoMenuUnico.submenuSuperior = NUM_SUBMENUS_SUPERIOR2 - 1;
+          }
+          if (estadoMenuUnico.submenuSuperior < 0) {
+            estadoMenuUnico.submenuSuperior = 0;
+          }
+        } while (!submenuValidoParaMenu(estadoMenuUnico.indiceSuperior1, estadoMenuUnico.submenuSuperior));
+      }
+      break;
+      
+    case ZONA_CENTRAL:
+      if (estadoMenuUnico.subzonaActiva == 0) {
+        // Rotar pista/grupo
+        estadoMenuUnico.indiceCentral1 += direccion;
+        if (estadoMenuUnico.indiceCentral1 >= 4) {
+          estadoMenuUnico.indiceCentral1 = 3;
+        }
+        if (estadoMenuUnico.indiceCentral1 < 0) {
+          estadoMenuUnico.indiceCentral1 = 0;
+        }
+        indicePistaActiva = estadoMenuUnico.indiceCentral1;
+      } else {
+        // Rotar paso/control
+        estadoMenuUnico.indiceCentral2 += direccion;
+        if (estadoMenuUnico.indiceCentral2 >= 16) {
+          estadoMenuUnico.indiceCentral2 = 15;
+        }
+        if (estadoMenuUnico.indiceCentral2 < 0) {
+          estadoMenuUnico.indiceCentral2 = 0;
+        }
+      }
+      break;
+      
+    case ZONA_INFERIOR:
+      // En zona inferior, cambiar valores
+      cambiarValorInferior(direccion);
+      break;
+  }
+  
+  actualizarTextosMenuUnico();
+}
+
+void dibujarMenuConParpadeo() {
+  // Esta funcionalidad está integrada en mostrarPantallaUnica()
+  // El parpadeo se controla con estadoMenuUnico.parpadeo
+}
+
+// ================================
+// GESTIÓN DE PRESETS
+// ================================
+
+std::vector<String> archivosPresetsSurface;
+std::vector<String> archivosPresetsSequencer;
+
+void cargarListaPresetsSurface() {
+  archivosPresetsSurface.clear();
+  
+  // TODO: Implementar lectura de directorio SD
+  // Por ahora, agregar presets de ejemplo
+  archivosPresetsSurface.push_back("SERUM_SP1_SURFACE_PRESET01.csv");
+  archivosPresetsSurface.push_back("SERUM_SP1_SURFACE_PRESET02.csv");
+  archivosPresetsSurface.push_back("SERUM_SP1_SURFACE_PRESET03.csv");
+}
+
+void cargarListaPresetsSequencer() {
+  archivosPresetsSequencer.clear();
+  
+  // TODO: Implementar lectura de directorio SD
+  // Por ahora, agregar presets de ejemplo
+  archivosPresetsSequencer.push_back("SERUM_SP1_SEQUENCER_PRESET01.csv");
+  archivosPresetsSequencer.push_back("SERUM_SP1_SEQUENCER_PRESET02.csv");
+  archivosPresetsSequencer.push_back("SERUM_SP1_SEQUENCER_PRESET03.csv");
+}
 
 void corregirSubmenuInvalido() {
   if (!submenuValidoParaMenu(estadoMenuUnico.indiceSuperior1, estadoMenuUnico.submenuSuperior)) {

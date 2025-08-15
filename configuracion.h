@@ -4,12 +4,6 @@
 
 #include <Arduino.h>
 
-// configuracion.h (añadir al final)
-extern uint8_t porcentajeLegato;
-extern uint8_t porcentajeSustain;
-extern bool modoMono;
-extern bool muteSequencerNotes;  // ✅ Requerido en menu_unico.cpp
-
 // ==========================
 // VARIABLES GLOBALES DE CONFIGURACIÓN
 // ==========================
@@ -19,9 +13,14 @@ extern bool bpmSyncEnabled;              // ✅ NUEVO: permite activar sincroní
 extern volatile uint8_t midiClockTicks;  // ✅ NUEVO: contador de ticks MIDI Clock
 extern const uint8_t ticksPorStep;       // ✅ NUEVO: cuántos ticks avanzan un paso (por defecto 6 = 1/16 nota)
 
+// Variables del secuenciador
+extern uint8_t porcentajeLegato;
+extern uint8_t porcentajeSustain;
+extern bool modoMono;
+extern bool muteSequencerNotes;
+
 // Estado global del secuenciador
 extern bool secuenciadorGlobalActivo;
-extern bool muteSequencerNotes;
 
 // Enrutado del secuenciador
 extern bool secuenciadorRutaActiva;

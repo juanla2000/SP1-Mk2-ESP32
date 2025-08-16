@@ -4,6 +4,7 @@
 
 #include <Arduino.h>
 #include <Adafruit_SSD1351.h>
+#include "pantalla_unica.h"
 #include "zona_menu.h"         // ✅ necesario para ZonaMenu
 #include "hardware_config.h"   // ✅ por consistencia general del proyecto
 
@@ -17,7 +18,9 @@ enum PantallaSistema {
   PANTALLA_STANDBY_SWITCH,
   PANTALLA_STANDBY_NOTE,
   PANTALLA_STANDBY_CC,
-  PANTALLA_MENU
+  PANTALLA_MENU,
+  PANTALLA_READY,  // ✅ Asegurarse de que esta línea existe
+  PANTALLA_INVALIDA = 0
 };
 
 // ===========================
@@ -28,6 +31,12 @@ struct ContenidoPantalla {
   uint16_t fondo1, texto1;
   uint16_t fondo2, texto2;
   uint16_t fondo3, texto3;
+  ContenidoPantalla() = default;
+  ContenidoPantalla(String l1, String l2, String l3, String l4, String l5,
+                   uint16_t f1, uint16_t t1, uint16_t f2, uint16_t t2,
+                   uint16_t f3, uint16_t t3) : 
+    linea1(l1), linea2(l2), linea3(l3), linea4(l4), linea5(l5),
+    fondo1(f1), texto1(t1), fondo2(f2), texto2(t2), fondo3(f3), texto3(t3) {}
 };
 
 // ===========================
@@ -51,11 +60,6 @@ void dibujarContenidoPantalla(const ContenidoPantalla& contenido);
 void actualizarZonaPantalla(ZonaMenu zona, const ContenidoPantalla& contenido);
 
 // =====================================================
-// ✅ NUEVO BLOQUE: GESTIÓN DE ROTARY ENCODER
+// ✅ FUNCIÓN PARA PROCESAR GIRO DEL ENCODER
 // =====================================================
-
-// Inicializa pines del encoder y estados previos
-void inicializarEncoder();
-
-// Llama periódicamente desde loop(): detecta giro y clics
-void gestionarEncoder();
+void procesarGiroEncoder(int delta);

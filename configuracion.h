@@ -3,10 +3,15 @@
 #pragma once
 
 #include <Arduino.h>
+#include "configuracion.h"  // Para muteSequencerNotes
 
 // ==========================
 // VARIABLES GLOBALES DE CONFIGURACIÓN
 // ==========================
+
+const unsigned long TIEMPO_PARPADEO = 200;  // ms para la pantalla
+const unsigned long TIMEOUT_MENU = 5000;    // ms para salir del menu
+
 extern uint16_t estadoTempo;
 extern bool bpmSyncEnabled;              // ✅ NUEVO: permite activar sincronía externa MIDI
 

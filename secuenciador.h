@@ -3,7 +3,7 @@
 #pragma once
 
 #include <Arduino.h>
-
+#include "controles.h" 
 #define NUM_SEQUENCERS 4
 #define MAX_STEPS_CONFIGURABLE 64
 
@@ -37,6 +37,8 @@ void inicializarSecuenciador();
 void avanzarPaso();
 void avanzarSecuencia();
 void apagarNotaSecuenciador();
+// Inicialización Clock DAW
+void actualizarClockUSB();
 
 // Edición y lectura
 void editarPaso(uint8_t index, const Step& nuevoPaso);

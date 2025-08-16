@@ -1,0 +1,23 @@
+Vamos con una parte nueva del FIRMWARE_SP1_Mk2_ESP32S3
+esta vez vamos a abordar la sincronización de BMP. Los dos nuevos menús y las acciones que vamos a abordar son:
+		PARTE SUPERIOR		PARTE CENTRAL		PARTE INFERIOR		
+ID	GRUPO	Linea sup 1 (Tamaño de letra auto)	Linea sup 2 (Tamaño de letra auto)	Linea Central 1 (Tamaño de letra auto)	Linea Central 2 (Tamaño de letra auto)	Linea Inferior unica (Tamaño de letra auto grande)	Pasos del encoder	Comentario
+21	MENU SEQUENCER	SEQUENCER	BMP	SELECT	BMP Value	[VALOR BMP]	1	Edita el BMP del secuenciador
+22	MENU SEQUENCER	SEQUENCER	BMP SYNC	SELECT	BMP SYNC	<ON / OFF>	1	Activa la sincronia MIDI externa de BMP
+
+Te he dejado todos los archivos de la versión FIRMWARE_SP1_Mk2_ESP32S3 v0.6, esta compila y parece funcionar. Utilízalos como base de programación, reinicia tu memoria de este código y usemos solo estos archivos nuevos como base. Leelos, analizalos, memorizalos y abordamos los cambios, haz un analisis completo y razona tu respuesta
+
+
+
+
+
+ok vamos con configuración.h, utiliza el código base del archivo con el mismo nombre de la carpeta de proyecto, solo integra y fusiona el nuevo código, no elimines nada, no obvies nada, no supongas nada, básate en el código real, consulta otros archivos modificados hace unos minutos o los del la carpeta de proyecto si aun están sin modificar, para asegurarte que el código es correcto y se hacen todos los extern, llamadas, include, void, etc. correctos. Utiliza un método avanzado de programación software, comprueba todo el código antes de entregarlo AQUI EN EL CHAT
+
+
+
+
+
+ok vamos primero con configuracion.cpp, utiliza el código base del archivo con el mismo nombre modificado hace unos minutos, solo integra y fusiona el nuevo código, no elimines nada, no obvies nada, no supongas nada, básate en el código real, consulta otros archivos modificados hace unos minutos o los del la carpeta de proyecto si aun están sin modificar, para asegurarte que el código es correcto y se hacen todos los extern, llamadas, include, void, etc. correctos. Utiliza un método avanzado de programación software, comprueba el código antes de entregarlo AQUI EN EL CHAT
+
+
+Te paso una versión que ha compilado correctamente, ahora quiero que planteemos de la forma más correcta, modular y profesional posible, reducir el numero de archivos totales del proyecto. Tienes que tener en cuenta que hace cada función y razonar donde colocarla, si es necesario podemos crear nuevos .h y .cpp que describan mejor lo que llevan en su interior, pero el objetivo es no tener mas de 3 o 4 archivos .h y y sus .cpp + el .ino principal. Además quiero unificar en un archivo de configuración, todo las declaraciones y constantes que conlleven modificaciones en el funcionamiento individual y global y que sean relevantes, para poder modificarlas en un archivo y no tener que estar navegando y buscando donde se declara. No me hagas caso del tiron y analiza tu respuesta, dime si es una opción valida y profesional, razona tu respuesta sin modificar nada aún en el código, solo dame tu respuesta

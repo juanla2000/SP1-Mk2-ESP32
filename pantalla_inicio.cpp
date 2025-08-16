@@ -1,6 +1,7 @@
 // pantalla_inicio.cpp
 
 #include <Adafruit_SSD1351.h>
+#include "controles.h" 
 #include "pantalla_inicio.h"
 #include "pantalla_unica.h"  // ✅ Para dibujarTextoCentrado()
 

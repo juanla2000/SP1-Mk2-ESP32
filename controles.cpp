@@ -10,6 +10,7 @@
 HardwareSerial midiSerial(1);
 Adafruit_SSD1351 display = Adafruit_SSD1351(SCREEN_WIDTH, SCREEN_HEIGHT, &SPI, OLED_CS, OLED_DC, OLED_RST);
 
+bool necesitaRefrescoParcial = false;
 bool secuenciaTecladoLinkeada = false;
 uint8_t pantallaActiva = 0;
 bool estadoParpadeo = false;
@@ -18,9 +19,9 @@ bool midiThruEnabled = true;
 bool shiftPulsado = false;
 unsigned long tiempoShift = 0;
 bool cambiandoZona = false;
-
-unsigned long tiempoUltimaInteraccionMenu = 0;
 bool menuActivoAnterior = false;
+
+extern unsigned long tiempoUltimaInteraccionMenu;
 
 Control controles[numControles];
 
@@ -103,9 +104,11 @@ void procesarComandoUART(const String& comando) {
   static int controlSeleccionado = 0;
 
   if (comando.startsWith("#ID:")) {
+    necesitaRefrescoParcial = true;
     controlSeleccionado = comando.substring(4).toInt();
   } else if (comando.startsWith("#VALUE:")) {
     int valor = comando.substring(7).toInt();
+    valor = constrain(valor, 0, 127); // Ensure valid MIDI value
     if (controlSeleccionado >= 0 && controlSeleccionado < numControles) {
       controles[controlSeleccionado].valor = constrain(valor, 0, 127);
       entradaEventoCC(controles[controlSeleccionado].mux, controles[controlSeleccionado].cc, controles[controlSeleccionado].valor);

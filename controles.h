@@ -7,6 +7,7 @@
 #include "hardware_config.h"
 
 extern HardwareSerial midiSerial;
+
 String obtenerNombreGrupo(uint8_t indice);
 String obtenerNombreSubgrupo(uint8_t grupoIndex);
 String obtenerNombreControl(uint8_t grupoIndex, uint8_t idControl);
@@ -24,6 +25,8 @@ struct Control {
 
 const uint8_t numControles = 108;
 extern Control controles[numControles];
+
+extern unsigned long tiempoUltimaInteraccionMenu;
 
 // Variables globales compartidas entre módulos
 extern bool secuenciaTecladoLinkeada;

@@ -1,4 +1,4 @@
-//hardware_config.h
+// hardware_config.h
 
 #pragma once
 
@@ -14,9 +14,14 @@
 // ----------------------------
 // Pines SPI
 // ----------------------------
-#define PIN_SPI_SCK   12
-#define PIN_SPI_MISO  14
-#define PIN_SPI_MOSI  3
+#define PIN_SPI_MOSI 46    // MOSI compartido para OLED y SD
+#define PIN_SPI_MISO 14    // MISO para tarjeta SD
+#define PIN_SPI_SCK  12    // SCK compartido para OLED y SD
+
+// Actualizar definición de pines SPI
+#define SPI_MOSI PIN_SPI_MOSI
+#define SPI_MISO PIN_SPI_MISO
+#define SPI_SCK  PIN_SPI_SCK
 
 // ----------------------------
 // Tamaño de pantalla
@@ -44,11 +49,11 @@
 #define EEPROM_KEYBOARD_ADDR      2
 
 // ----------------------------
-// Rotary Encoder (uso exclusivo)
+// Rotary Encoder (uso exclusivo) - CONFIGURACIÓN ACTUALIZADA
 // ----------------------------
-#define ENCODER_A_PIN         9
-#define ENCODER_B_PIN         10
-#define ENCODER_BUTTON_PIN    13
+#define ENCODER_CLK_PIN     9    // Pin CLK del encoder (anteriormente ENCODER_A_PIN)
+#define ENCODER_DT_PIN      10   // Pin DT del encoder (anteriormente ENCODER_B_PIN)
+#define ENCODER_BUTTON_PIN  13   // Pin del botón del encoder
 
 // ----------------------------
 // Variables globales compartidas
